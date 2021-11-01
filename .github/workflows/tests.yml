@@ -1,0 +1,57 @@
+env:
+  RUBY_VERSION: 3.0.2
+
+name: Tests
+on: [push,pull_request]
+
+jobs:
+  rubocop-test:
+    name: Rubocop
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ env.RUBY_VERSION }}
+      - name: Install Rubocop
+        run: gem install rubocop
+      - name: Install Rubocop-Rspec
+        run: gem install rubocop-rspec
+      - name: Check code
+        run: rubocop --require rubocop-rspec
+  tests:
+    name: RSpec
+    runs-on: ubuntu-latest  
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: ruby/setup-ruby@v1
+        with:
+            ruby-version: '3.0.2'
+
+      - name: Install dependent libraries
+        run: sudo apt-get install libpq-dev
+
+      - name: Bundle install
+        run: |
+          gem install bundler
+          bundle install --jobs 4 --retry 3
+      
+      - name: Gems Cache
+        id: gem-cache
+        uses: actions/cache@v1
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gem-
+      
+      - name: Bundle Install
+        run: bundle check || bundle install --path vendor/bundle --jobs 4 --retry 3
+
+      - name: Run RSpec
+        run: |
+          RAILS_ENV=test bundle exec rspec
+          COVERAGE=true 
+        env:
+          RAILS_ENV: test
