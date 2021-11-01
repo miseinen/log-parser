@@ -1,0 +1,18 @@
+require:
+  - rubocop-rspec
+
+AllCops:
+    NewCops: enable
+
+Style/Documentation:
+  Enabled: false
+
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'
+
+MultipleMemoizedHelpers:
+  Enabled: false
+
+Style/RegexpLiteral:
+  Enabled: false
